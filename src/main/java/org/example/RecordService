@@ -17,11 +17,6 @@ public class RecordService {
     private RecordRepository recordRepository;
 
     public void loadCsv (MultipartFile file) {
-         
-        //read csv files line by line 
-        //create the Record object and populate it 
-        //call the record repository to populate it to the database
-        //catch possible exceptions eventually
 
         try (InputStreamReader streamReader = new InputStreamReader(file.getInputStream())) {
             
