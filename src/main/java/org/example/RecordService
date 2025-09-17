@@ -1,0 +1,65 @@
+import java.util.List;
+import java.util.stream.*;
+import java.util.Collectors;
+import java.lang.reflect.Field;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class RecordService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RecordService.class);
+
+    @Autowired
+    private RecordRepository recordRepository;
+
+    public void loadCsv (MultipartFile file) {
+         
+        //read csv files line by line 
+        //create the Record object and populate it 
+        //call the record repository to populate it to the database
+        //catch possible exceptions eventually
+
+        try (InputStreamReader streamReader = new InputStreamReader(file.getInputStream())) {
+            
+            CSVFormat format = CSVFormat.Builder.create()
+                            .setHeader("name", "value")
+                            .setSkipHeaderRecord(false)
+                            .build();
+            for(CSVRecord record: format.parse(streamReader))  {
+                String name = record.get("name");
+                String value = record.get("value");
+                
+                Record newRecord = new Record(name,value);
+                recordRepository.save(newRecord);
+            }     
+        } catch(IOException ex ){
+            logger.error("Error loading CSV file", ex);
+        }
+
+    }
+
+    public List<Record> query (String field, String value) {
+        
+      List<Record> records = recordRepository.findAll();
+      return records.stream().filter(record -> isMatching(record,field, value)).collect(Collectors.toList());
+
+    }
+
+    private boolean isMatching(Record record, String field, String value) {
+        try {
+            Field recordField = record.getClass().getDeclaredField(field);
+            recordField.setAccessible(true);
+            Object fieldValue = recordField.get(record);
+            return fieldValue != null && fieldValue.toString().equals(value);
+
+        } catch(IllegalArgumentException ex) {
+            logger.warn("Failed to access field '{}' in Record with id={}", field, record.getId());
+        }
+        return false;
+    }
+   
+}

@@ -15,19 +15,28 @@ import java.util.List;
 
 @RestController
 public class RecordController {
+
     @Autowired
-    private RecordRepository recordRepository;
+    private RecordService recordService;
 
     @PostMapping("/load")
     public ResponseEntity<String> loadCsv(@RequestParam("file") MultipartFile file) {
-        //TODO
-        return null;
+        
+        if(file.isEmpty()){
+            return ResponseEntity.badRequest.body("File is empty");
+        }
+        recordService.loadCsv(file);
+
+        return ResponseEntity.ok("CSV processed");
     }
 
     @GetMapping("/query")
     public ResponseEntity<List<Record>> query(@RequestParam String field, @RequestParam String value) {
-       //TODO
-        return null;
+        List<String> validFields = Arrays.asList("id", "name", "value");
+        if(!validFields.contains(field.toLowerCase())) {
+             return ResponseEntity.badRequest.body("Invalid field parameter");
+        }
+        List<Record> records = recordService.query(field, value);
+        return ResponseEntity.ok(records);
     }
 }
-
