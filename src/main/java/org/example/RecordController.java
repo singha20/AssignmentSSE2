@@ -19,7 +19,7 @@ public class RecordController {
     private RecordRepository recordRepository;
 
     @PostMapping("/load")
-    public ResponseEntity<String> loadCsv(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> load(@RequestParam("file") MultipartFile file) {
         //TODO
         return null;
     }
